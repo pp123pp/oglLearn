@@ -38,6 +38,8 @@ export class Renderer {
         this.autoClear = autoClear;
 
         // Attempt WebGL2 unless forced to 1, if not supported fallback to WebGL1
+
+        //获取webgl上下文,是否使用WebGL2
         if (webgl === 2) this.gl = canvas.getContext('webgl2', attributes);
         this.isWebgl2 = !!this.gl;
         if (!this.gl) {
@@ -48,24 +50,47 @@ export class Renderer {
         this.gl.renderer = this;
 
         // initialise size values
+        //设置可视区域
         this.setSize(width, height);
 
         // Store device parameters
         this.parameters = {};
+        //获取当前支持的最大纹理单元数
         this.parameters.maxTextureUnits = this.gl.getParameter(this.gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS);
 
         // gl state stores to avoid redundant calls on methods used internally
         this.state = {};
+
+        /*
+        src: 源颜色
+        dst: 目标颜色
+        这里设置混合效果:完全使用源颜色还是目标颜色
+         */
         this.state.blendFunc = {src: this.gl.ONE, dst: this.gl.ZERO};
+
+        /*
+        混合方式
+        modeRGB: 源颜色 + 目标颜色
+         */
         this.state.blendEquation = {modeRGB: this.gl.FUNC_ADD};
         this.state.cullFace = null;
+
+        /*
+        设定遮挡剔除
+        CCW: 将逆时针设置为外侧
+         */
         this.state.frontFace = this.gl.CCW;
+        //启用深度写入
         this.state.depthMask = true;
+        //当新的Z值比较小，则使用新的，即绘制最前面的
         this.state.depthFunc = this.gl.LESS;
+        //是否预乘背景的alpha
         this.state.premultiplyAlpha = false;
+        //是否执行Y轴反转
         this.state.flipY = false;
         this.state.unpackAlignment = 4;
         this.state.framebuffer = null;
+        //视图的宽高
         this.state.viewport = {width: null, height: null};
         this.state.textureUnits = [];
         this.state.activeTextureUnit = 0;
@@ -73,10 +98,13 @@ export class Renderer {
         this.state.uniformLocations = new Map();
 
         // store requested extensions
+        //该对象用来保存需要的扩展
         this.extensions = {};
 
         // Initialise extra format types
+        //如果当前支持webgl2
         if (this.isWebgl2) {
+            //获取需要的拓展
             this.getExtension('EXT_color_buffer_float');
             this.getExtension('OES_texture_float_linear');
         } else {
@@ -94,8 +122,15 @@ export class Renderer {
         this.vertexAttribDivisor = this.getExtension('ANGLE_instanced_arrays', 'vertexAttribDivisor', 'vertexAttribDivisorANGLE');
         this.drawArraysInstanced = this.getExtension('ANGLE_instanced_arrays', 'drawArraysInstanced', 'drawArraysInstancedANGLE');
         this.drawElementsInstanced = this.getExtension('ANGLE_instanced_arrays', 'drawElementsInstanced', 'drawElementsInstancedANGLE');
+
+        /*
+        OES_vertex_array_object: 该拓展允许使用顶点数组对象
+         */
+        //创建顶点数组对象
         this.createVertexArray = this.getExtension('OES_vertex_array_object', 'createVertexArray', 'createVertexArrayOES');
+        //绑定顶点数组对象
         this.bindVertexArray = this.getExtension('OES_vertex_array_object', 'bindVertexArray', 'bindVertexArrayOES');
+        //删除顶点数组对象
         this.deleteVertexArray = this.getExtension('OES_vertex_array_object', 'deleteVertexArray', 'deleteVertexArrayOES');
     }
 

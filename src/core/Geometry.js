@@ -20,17 +20,22 @@ let ATTR_ID = 0;
 
 export class Geometry {
     constructor(gl, attributes = {}) {
+        //webgl上下文
         this.gl = gl;
+        //attribute数据
         this.attributes = attributes;
+        //场景ID自加1
         this.id = ID++;
 
         // Store one VAO per program attribute locations order
+        //保存顶点数组对象(VAO)
         this.VAOs = {};
 
         this.drawRange = {start: 0, count: 0};
         this.instancedCount = 0;
 
         // Unbind current VAO so that new buffers don't get added to active mesh
+        //将顶点数组对象解绑
         this.gl.renderer.bindVertexArray(null);
         this.gl.renderer.currentGeometry = null;
 
@@ -38,29 +43,39 @@ export class Geometry {
         this.glState = this.gl.renderer.state;
 
         // create the buffers
+        //遍历创建的attribute并创建buffer
         for (let key in attributes) {
             this.addAttribute(key, attributes[key]);
         }
     }
 
     addAttribute(key, attr) {
+        //保存attribute
         this.attributes[key] = attr;
 
         // Set options
         attr.id = ATTR_ID++;
+        //设定分组值
         attr.size = attr.size || 1;
+        //设定输入的数据类型
         attr.type = attr.type || (
             attr.data.constructor === Float32Array ? this.gl.FLOAT : 
             attr.data.constructor === Uint16Array ? this.gl.UNSIGNED_SHORT : 
             this.gl.UNSIGNED_INT); // Uint32Array
+
+        //判断当前的attribute是否为index，并设定不同的存储目标
         attr.target = key === 'index' ? this.gl.ELEMENT_ARRAY_BUFFER : this.gl.ARRAY_BUFFER;
+        //是否归一化
         attr.normalize = attr.normalize || false;
+        //创建一个buffer
         attr.buffer = this.gl.createBuffer();
+        //顶点数量
         attr.count = attr.data.length / attr.size;
         attr.divisor = attr.instanced || 0;
         attr.needsUpdate = false;
 
         // Push data to buffer
+        //将数据存到buffer中
         this.updateAttribute(attr);
 
         // Update geometry counts. If indexed, ignore regular attributes
@@ -72,6 +87,7 @@ export class Geometry {
             }
             this.instancedCount = attr.count * attr.divisor;
         } else if (key === 'index') {
+            //如果当前数据为index
             this.drawRange.count = attr.count;
         } else if (!this.attributes.index) {
             this.drawRange.count = Math.max(this.drawRange.count, attr.count);
@@ -81,10 +97,14 @@ export class Geometry {
     updateAttribute(attr) {
 
         // Already bound, prevent gl command
+        //如果当前attribute未绑定到缓冲区中（即，在boundBuffer中没有当前id）
         if (this.glState.boundBuffer !== attr.id) {
+            //绑定缓冲区
             this.gl.bindBuffer(attr.target, attr.buffer);
+            //保存id
             this.glState.boundBuffer = attr.id;
         }
+        //在缓冲区中写入数据,gl.STATIC_DRAW:只像缓冲区中写入一次数据，然后绘制多次
         this.gl.bufferData(attr.target, attr.data, this.gl.STATIC_DRAW);
         attr.needsUpdate = false;
     }

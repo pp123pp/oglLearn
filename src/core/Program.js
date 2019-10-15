@@ -28,22 +28,30 @@ export class Program {
         if (!fragment) console.warn('fragment shader not supplied');
 
         // Store program state
+        //是否透明
         this.transparent = transparent;
+        //裁剪面
         this.cullFace = cullFace;
+        //指定正面判定方式
         this.frontFace = frontFace;
+        //是否执行深度测试
         this.depthTest = depthTest;
+        //是否写入深度
         this.depthWrite = depthWrite;
+        //深度判定方式
         this.depthFunc = depthFunc;
         this.blendFunc = {};
         this.blendEquation = {};
 
         // set default blendFunc if transparent flagged
+        //如果透明，且不使用源颜色
         if (this.transparent && !this.blendFunc.src) {
             if (this.gl.renderer.premultipliedAlpha) this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
             else this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         }
 
         // compile vertex shader and log errors
+        //创建shader对象
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vertex);
         gl.compileShader(vertexShader);
