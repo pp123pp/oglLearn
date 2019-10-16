@@ -8,13 +8,13 @@ export class Mesh extends Transform {
     constructor(gl, {
         geometry,
         program,
-        mode = gl.TRIANGLES,
-        frustumCulled = true,
+        mode = gl.TRIANGLES,    //绘制模式
+        frustumCulled = true,   //视锥裁剪
         renderOrder = 0,
     } = {}) {
         super(gl);
         this.gl = gl;
-        this.id = ID++;
+        this.id = ID++; //mesh ID自加
 
         this.geometry = geometry;
         this.program = program;
@@ -76,8 +76,10 @@ export class Mesh extends Transform {
         }
 
         // determine if faces need to be flipped - when mesh scaled negatively
+        //这里如果对象的矩阵的行列式<0，则产生镜像，此时三角面需要进行翻转
         let flipFaces = this.program.cullFace && this.worldMatrix.determinant() < 0;
 
+        //是否执行面翻转
         this.program.use({flipFaces});
         this.geometry.draw({mode: this.mode, program: this.program});
 

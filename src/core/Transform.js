@@ -39,9 +39,14 @@ export class Transform {
         if (notifyChild) child.setParent(null, false);
     }
 
+    //更新世界矩阵
     updateMatrixWorld(force) {
+        //是否自动更新世界矩阵
         if (this.matrixAutoUpdate) this.updateMatrix();
+
+        //如果需要更新当前对象的世界矩阵
         if (this.worldMatrixNeedsUpdate || force) {
+            //如果不存在父级
             if (this.parent === null) this.worldMatrix.copy(this.matrix);
             else this.worldMatrix.multiply(this.parent.worldMatrix, this.matrix);
             this.worldMatrixNeedsUpdate = false;

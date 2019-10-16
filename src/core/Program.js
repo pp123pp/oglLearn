@@ -46,44 +46,59 @@ export class Program {
         // set default blendFunc if transparent flagged
         //如果透明，且不使用源颜色
         if (this.transparent && !this.blendFunc.src) {
+            //根据是否预乘背景alpha，指定相应的混合函数
             if (this.gl.renderer.premultipliedAlpha) this.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
             else this.setBlendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         }
 
         // compile vertex shader and log errors
-        //创建shader对象
+        //创建VS
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        //绑定shader
         gl.shaderSource(vertexShader, vertex);
+        //编译shader
         gl.compileShader(vertexShader);
         if (gl.getShaderInfoLog(vertexShader) !== '') {
             console.warn(`${gl.getShaderInfoLog(vertexShader)}\nVertex Shader\n${addLineNumbers(vertex)}`);
         }
 
         // compile fragment shader and log errors
+        //创建FS
         const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        //绑定shader
         gl.shaderSource(fragmentShader, fragment);
+        //编译shader
         gl.compileShader(fragmentShader);
         if (gl.getShaderInfoLog(fragmentShader) !== '') {
             console.warn(`${gl.getShaderInfoLog(fragmentShader)}\nFragment Shader\n${addLineNumbers(fragment)}`);
         }
 
         // compile program and log errors
+        //创建程序对象
         this.program = gl.createProgram();
+        //program与vs绑定
         gl.attachShader(this.program, vertexShader);
+        //program与fs绑定
         gl.attachShader(this.program, fragmentShader);
+        //指定program
         gl.linkProgram(this.program);
         if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
             return console.warn(gl.getProgramInfoLog(this.program));
         }
 
         // Remove shader once linked
+        //移除shader
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
 
         // Get active uniform locations
+        //保存uniform变量的存储位置
         this.uniformLocations = new Map();
+
+        //返回当前program中shader的uniform数量
         let numUniforms = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
         for (let uIndex = 0; uIndex < numUniforms; uIndex++) {
+            //根据索引获取uniform
             let uniform = gl.getActiveUniform(this.program, uIndex);
             this.uniformLocations.set(uniform, gl.getUniformLocation(this.program, uniform.name));
 
@@ -103,13 +118,18 @@ export class Program {
         }
 
         // Get active attribute locations
+        //保存attribute变量的存储位置
         this.attributeLocations = new Map();
-        const locations = []; 
+        const locations = [];
+        //获取当前激活的attribute变量的存储位置
         const numAttribs = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
         for (let aIndex = 0; aIndex < numAttribs; aIndex++) {
+            //根据索引获取当前激活的attribute变量的信息
             const attribute = gl.getActiveAttrib(this.program, aIndex);
+            //根据name获取attribute变量的存储位置
             const location = gl.getAttribLocation(this.program, attribute.name);
             locations[location] = attribute.name;
+            //保存attribute变量的name与location
             this.attributeLocations.set(attribute.name, location);
         }
         this.attributeOrder = locations.join('');
@@ -150,11 +170,15 @@ export class Program {
         flipFaces = false,
     } = {}) {
         let textureUnit = -1;
+        //判断当前的program是否激活
         const programActive = this.gl.renderer.currentProgram === this.id;
 
         // Avoid gl call if program already in use
+        //如果未激活
         if (!programActive) {
+            //激活该program
             this.gl.useProgram(this.program);
+            //记录当前的program对象
             this.gl.renderer.currentProgram = this.id;
         }
 

@@ -149,6 +149,7 @@ export class Mat4 extends Array {
         return this;
     }
 
+    //计算矩阵的行列式
     determinant() {
         return Mat4Func.determinant(this);
     }

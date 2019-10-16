@@ -32,6 +32,7 @@ export class Renderer {
         this.dpr = dpr;
         this.alpha = alpha;
         this.color = true;
+        //深度可写
         this.depth = depth;
         this.stencil = stencil;
         this.premultipliedAlpha = premultipliedAlpha;
@@ -151,6 +152,7 @@ export class Renderer {
         if (this.state.viewport.width === width && this.state.viewport.height === height) return;
         this.state.viewport.width = width;
         this.state.viewport.height = height;
+        //设置视口
         this.gl.viewport(0, 0, width, height);
     }
 
@@ -279,6 +281,7 @@ export class Renderer {
         if (camera && frustumCull) camera.updateFrustum();
 
         // Get visible
+        //获取场景中所有可见的对象
         scene.traverse(node => {
             if (!node.visible) return true;
             if (!node.draw) return;
@@ -290,6 +293,7 @@ export class Renderer {
             renderList.push(node);
         });
 
+        //如果执行排序
         if (sort) {
             const opaque = [];
             const transparent = []; // depthTest true
@@ -298,14 +302,19 @@ export class Renderer {
             renderList.forEach(node => {
 
                 // Split into the 3 render groups
+                //如果当前对象不透明
                 if (!node.program.transparent) {
+                    //将当前对象push到不透明的渲染队列中
                     opaque.push(node);
                 } else if (node.program.depthTest) {
+                    //如果当前透明且执行深度测试，将其添加到透明渲染的队列中
                     transparent.push(node);
                 } else {
+                    //否则将当前对象显示在最前面，以2D的形式展示
                     ui.push(node);
                 }
 
+                //初始化深度为0
                 node.zDepth = 0;
 
                 // Only calculate z-depth if renderOrder unset and depthTest is true
@@ -317,10 +326,14 @@ export class Renderer {
                 node.zDepth = tempVec3.z;
             });
 
+            //不透明物体排序
             opaque.sort(this.sortOpaque);
+            //透明物体的渲染排序
             transparent.sort(this.sortTransparent);
+            //UHD排序
             ui.sort(this.sortUI);
 
+            //排序结束后，返回最终的大数组
             renderList = opaque.concat(transparent, ui);
         }
 
@@ -333,6 +346,7 @@ export class Renderer {
         target = null,
         update = true,
         sort = true,
+        //视锥裁剪
         frustumCull = true,
         clear,
     }) {
@@ -340,7 +354,9 @@ export class Renderer {
         if (target === null) {
 
             // make sure no render target bound so draws to canvas
+            //绑定FBO，如果存在离屏渲染
             this.bindFramebuffer();
+            //设置视口
             this.setViewport(this.width * this.dpr, this.height * this.dpr);
         } else {
 
@@ -349,25 +365,34 @@ export class Renderer {
             this.setViewport(target.width, target.height);
         }
 
+        //如果自动更新buffer
         if (clear || (this.autoClear && clear !== false)) {
 
             // Ensure depth buffer writing is enabled so it can be cleared
+            //如果启用深度可写
             if (this.depth && (!target || target.depth)) {
+                //启用深度测试
                 this.enable(this.gl.DEPTH_TEST);
+                //启用深度可写
                 this.setDepthMask(true);
             }
+            //清空缓冲区
             this.gl.clear((this.color ? this.gl.COLOR_BUFFER_BIT : 0) | (this.depth ? this.gl.DEPTH_BUFFER_BIT : 0) | (this.stencil ? this.gl.STENCIL_BUFFER_BIT : 0));
         }
 
         // updates all scene graph matrices
+        //更新场景中所有的世界矩阵
         if (update) scene.updateMatrixWorld();
 
         // Update camera separately if not in scene graph
+        //更新相机的世界矩阵
         if (camera && camera.parent === null) camera.updateMatrixWorld();
 
         // Get render list - entails culling and sorting
+        //获取渲染列表
         const renderList = this.getRenderList({scene, camera, frustumCull, sort});
 
+        //遍历需要渲染的对象，进行绘制
         renderList.forEach(node => {
             node.draw({camera});
         });
