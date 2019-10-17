@@ -104,9 +104,9 @@ export class Program {
 
             // split uniforms' names to separate array and struct declarations
             const split = uniform.name.match(/(\w+)/g);
-            
+
             uniform.uniformName = split[0];
-            
+
             if (split.length === 3) {
                 uniform.isStructArray = true;
                 uniform.structIndex = Number(split[1]);
@@ -149,19 +149,28 @@ export class Program {
     }
 
     applyState() {
+        //如果执行深度测试，则开启深度测试功能，否则关闭
         if (this.depthTest) this.gl.renderer.enable(this.gl.DEPTH_TEST);
         else this.gl.renderer.disable(this.gl.DEPTH_TEST);
 
+        //如果执行遮挡剔除，则开启遮挡剔除
         if (this.cullFace) this.gl.renderer.enable(this.gl.CULL_FACE);
         else this.gl.renderer.disable(this.gl.CULL_FACE);
 
+        //是否开启混合
         if (this.blendFunc.src) this.gl.renderer.enable(this.gl.BLEND);
         else this.gl.renderer.disable(this.gl.BLEND);
 
+        //如果执行隐藏面剔除，则设置剔除面
         if (this.cullFace) this.gl.renderer.setCullFace(this.cullFace);
+        //设置正面
         this.gl.renderer.setFrontFace(this.frontFace);
+        //深度写入
         this.gl.renderer.setDepthMask(this.depthWrite);
+        //深度测试
         this.gl.renderer.setDepthFunc(this.depthFunc);
+
+        //如果执行alpha混合
         if (this.blendFunc.src) this.gl.renderer.setBlendFunc(this.blendFunc.src, this.blendFunc.dst, this.blendFunc.srcAlpha, this.blendFunc.dstAlpha);
         if (this.blendEquation.modeRGB) this.gl.renderer.setBlendEquation(this.blendEquation.modeRGB, this.blendEquation.modeAlpha);
     }
@@ -184,16 +193,23 @@ export class Program {
 
         // Set only the active uniforms found in the shader
         this.uniformLocations.forEach((location, activeUniform) => {
+
+            //获取当前uniform的name
             let name = activeUniform.uniformName;
 
             // get supplied uniform
+
+            //获取当前的uniform
             let uniform = this.uniforms[name];
 
             // For structs, get the specific property instead of the entire object
+            //如果当前uniform为结构体
             if (activeUniform.isStruct) {
                 uniform = uniform[activeUniform.structProperty];
                 name += `.${activeUniform.structProperty}`;
             }
+
+            //如果是结构体数组
             if (activeUniform.isStructArray) {
                 uniform = uniform[activeUniform.structIndex][activeUniform.structProperty];
                 name += `[${activeUniform.structIndex}].${activeUniform.structProperty}`;
@@ -209,7 +225,7 @@ export class Program {
 
             if (uniform.value.texture) {
                 textureUnit = textureUnit + 1;
-                
+
                 // Check if texture needs to be updated
                 uniform.value.update(textureUnit);
                 return setUniform(this.gl, activeUniform.type, location, textureUnit);
@@ -223,14 +239,18 @@ export class Program {
                     value.update(textureUnit);
                     textureUnits.push(textureUnit);
                 });
-                
+
                 return setUniform(this.gl, activeUniform.type, location, textureUnits);
             }
 
+            //设置uniform值
             setUniform(this.gl, activeUniform.type, location, uniform.value);
         });
 
+        //更新状态
         this.applyState();
+
+        //如果执行面反转
         if (flipFaces) this.gl.renderer.setFrontFace(this.frontFace === this.gl.CCW ? this.gl.CW : this.gl.CCW);
     }
 
@@ -241,6 +261,8 @@ export class Program {
 
 function setUniform(gl, type, location, value) {
     value = value.length ? flatten(value) : value;
+
+    //根据location获取uniform值
     const setValue = gl.renderer.state.uniformLocations.get(location);
 
     // Avoid redundant uniform commands
@@ -257,10 +279,14 @@ function setUniform(gl, type, location, value) {
             gl.renderer.state.uniformLocations.set(location, setValue);
         }
     } else {
+        //如果当前值相等，则不需要更新
         if (setValue === value) return;
+
+        //更新指定uniform的值
         gl.renderer.state.uniformLocations.set(location, value);
     }
 
+    //根据数据类型，将数据传入shader中
     switch (type) {
         case 5126  : return value.length ? gl.uniform1fv(location, value) : gl.uniform1f(location, value); // FLOAT
         case 35664 : return gl.uniform2fv(location, value); // FLOAT_VEC2

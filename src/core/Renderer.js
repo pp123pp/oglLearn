@@ -181,6 +181,7 @@ export class Renderer {
         else this.gl.blendFunc(src, dst);
     }
 
+    //设置混合公式
     setBlendEquation(modeRGB, modeAlpha) {
         if (this.state.blendEquation.modeRGB === modeRGB &&
             this.state.blendEquation.modeAlpha === modeAlpha) return;
@@ -196,18 +197,21 @@ export class Renderer {
         this.gl.cullFace(value);
     }
 
+    //设置正面
     setFrontFace(value) {
         if (this.state.frontFace === value) return;
         this.state.frontFace = value;
         this.gl.frontFace(value);
     }
 
+    //是否开启深度写入
     setDepthMask(value) {
         if (this.state.depthMask === value) return;
         this.state.depthMask = value;
         this.gl.depthMask(value);
     }
 
+    //深度测试方式
     setDepthFunc(value) {
         if (this.state.depthFunc === value) return;
         this.state.depthFunc = value;
