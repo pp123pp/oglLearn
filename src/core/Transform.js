@@ -5,18 +5,28 @@ import {Euler} from '../math/Euler.js';
 
 export class Transform {
     constructor() {
+        //当前对象的父级
         this.parent = null;
         this.children = [];
+        //可见性
         this.visible = true;
 
+        //局部矩阵
         this.matrix = new Mat4();
+        //世界矩阵
         this.worldMatrix = new Mat4();
+        //矩阵是否每一帧自动更新
         this.matrixAutoUpdate = true;
 
+        //坐标
         this.position = new Vec3();
+        //四元数
         this.quaternion = new Quat();
+        //缩放
         this.scale = new Vec3(1);
+        //欧拉角
         this.rotation = new Euler();
+        //上方向
         this.up = new Vec3(0, 1, 0);
 
         this.rotation.onChange = () => this.quaternion.fromEuler(this.rotation);

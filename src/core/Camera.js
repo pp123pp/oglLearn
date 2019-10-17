@@ -20,16 +20,25 @@ export class Camera extends Transform {
     } = {}) {
         super(gl);
 
+        //近裁剪面
         this.near = near;
+        //远裁剪面
         this.far = far;
+        //视角
         this.fov = fov;
+        //宽高比
         this.aspect = aspect;
 
+        //投影矩阵
         this.projectionMatrix = new Mat4();
+        //视图矩阵
         this.viewMatrix = new Mat4();
+        //视图投影矩阵
         this.projectionViewMatrix = new Mat4();
 
         // Use orthographic if values set, else default to perspective camera
+
+        //平行投影还是透视投影
         if (left || right) this.orthographic({left, right, bottom, top});
         else this.perspective();
     }
@@ -40,7 +49,9 @@ export class Camera extends Transform {
         fov = this.fov,
         aspect = this.aspect,
     } = {}) {
+        //构建透视投影矩阵
         this.projectionMatrix.fromPerspective({fov: fov * (Math.PI / 180), aspect, near, far});
+        //设定type值
         this.type = 'perspective';
         return this;
     }

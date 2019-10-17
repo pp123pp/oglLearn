@@ -93,6 +93,7 @@ export class Mat4 extends Array {
         return this;
     }
 
+    //构造透视投影矩阵
     fromPerspective({fov, aspect, near, far} = {}) {
         Mat4Func.perspective(this, fov, aspect, near, far);
         return this;
