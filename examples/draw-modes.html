@@ -85,8 +85,11 @@
             });
 
             // gl.POINTS: draws 4 points (actually draws 6, with 2 duplicates due to the geometry indices)
+            //设定绘制模式为点
             const points = new Mesh(gl, {mode: gl.POINTS, geometry, program});
+            //设置父级
             points.setParent(scene);
+            //设置坐标
             points.position.set(-1, 1, 0);
 
             // gl.LINES: draws 3 lines - a line between each pair of vertices.

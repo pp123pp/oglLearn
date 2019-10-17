@@ -279,14 +279,17 @@ export class Renderer {
         }
     }
 
+    //获取需要渲染的对象列表
     getRenderList({scene, camera, frustumCull, sort}) {
         let renderList = [];
 
+        //如果设定了相机，更新视锥
         if (camera && frustumCull) camera.updateFrustum();
 
         // Get visible
         //获取场景中所有可见的对象
         scene.traverse(node => {
+            //如果当前对象不可见，则直接返回
             if (!node.visible) return true;
             if (!node.draw) return;
 
