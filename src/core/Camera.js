@@ -69,15 +69,21 @@ export class Camera extends Transform {
         return this;
     }
 
+    //更新相机的世界矩阵
     updateMatrixWorld() {
+        //更新世界矩阵
         super.updateMatrixWorld();
+
+        //世界矩阵的逆 =》视图矩阵
         this.viewMatrix.inverse(this.worldMatrix);
         
         // used for sorting
+        //重新计算视图投影矩阵
         this.projectionViewMatrix.multiply(this.projectionMatrix, this.viewMatrix);
         return this;
     }
 
+    //相机看向指定坐标
     lookAt(target) {
         super.lookAt(target, true);
         return this;
@@ -102,6 +108,7 @@ export class Camera extends Transform {
             this.frustum = [new Vec3(), new Vec3(), new Vec3(), new Vec3(), new Vec3(), new Vec3()];
         }
 
+        //根据视图投影矩阵构造视锥
         const m = this.projectionViewMatrix;
         this.frustum[0].set(m[3] - m[0], m[7] - m[4], m[11] - m[8]).constant = m[15] - m[12]; // -x
         this.frustum[1].set(m[3] + m[0], m[7] + m[4], m[11] + m[8]).constant = m[15] + m[12]; // +x

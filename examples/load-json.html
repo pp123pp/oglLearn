@@ -77,7 +77,10 @@
 
             const scene = new Transform();
 
+            //创建纹理对象
             const texture = new Texture(gl);
+
+            //创建image对象
             const img = new Image();
             img.onload = () => texture.image = img;
             img.src = 'assets/fox.jpg';
@@ -91,10 +94,12 @@
             });
 
             let mesh;
+            //加载模型
             loadModel();
             async function loadModel() {
                 const data = await (await fetch(`assets/fox.json`)).json();
 
+                //
                 const geometry = new Geometry(gl, {
                     position: {size: 3, data: new Float32Array(data.position)},
                     uv: {size: 2, data: new Float32Array(data.uv)},

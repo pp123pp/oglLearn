@@ -218,7 +218,9 @@ export class Renderer {
         this.gl.depthFunc(value);
     }
 
+    //激活纹理单元
     activeTexture(value) {
+        //如果当前需要激活的纹理单元与已经激活的不一样
         if (this.state.activeTextureUnit === value) return;
         this.state.activeTextureUnit = value;
         this.gl.activeTexture(this.gl.TEXTURE0 + value);

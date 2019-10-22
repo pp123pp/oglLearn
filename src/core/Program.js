@@ -14,11 +14,11 @@ export class Program {
         uniforms = {},
 
         transparent = false,
-        cullFace = gl.BACK,
-        frontFace = gl.CCW,
-        depthTest = true,
-        depthWrite = true,
-        depthFunc = gl.LESS,
+        cullFace = gl.BACK,     //背面裁剪
+        frontFace = gl.CCW,     //逆时针为背面
+        depthTest = true,       //执行深度测试
+        depthWrite = true,      //深度写入
+        depthFunc = gl.LESS,    //深度较小的通过测试
     } = {}) {
         this.gl = gl;
         this.uniforms = uniforms;
@@ -175,6 +175,7 @@ export class Program {
         if (this.blendEquation.modeRGB) this.gl.renderer.setBlendEquation(this.blendEquation.modeRGB, this.blendEquation.modeAlpha);
     }
 
+    //告知webgl系统使用当前program
     use({
         flipFaces = false,
     } = {}) {
@@ -192,6 +193,7 @@ export class Program {
         }
 
         // Set only the active uniforms found in the shader
+        //遍历当前激活的uniform，并将这些值传入到webgl系统中
         this.uniformLocations.forEach((location, activeUniform) => {
 
             //获取当前uniform的name
@@ -223,11 +225,15 @@ export class Program {
                 return warn(`${name} uniform is missing a value parameter`);
             }
 
+            //如果当前的uniform为纹理对象
             if (uniform.value.texture) {
+                //纹理单元数自加1
                 textureUnit = textureUnit + 1;
 
                 // Check if texture needs to be updated
+                //执行纹理单元的update方法，判断是否需要更新
                 uniform.value.update(textureUnit);
+                //将uniform值传输到webgl中
                 return setUniform(this.gl, activeUniform.type, location, textureUnit);
             }
 

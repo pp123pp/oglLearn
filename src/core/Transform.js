@@ -29,13 +29,17 @@ export class Transform {
         //上方向
         this.up = new Vec3(0, 1, 0);
 
+        //保持四元数与欧拉角的同步更新
         this.rotation.onChange = () => this.quaternion.fromEuler(this.rotation);
         this.quaternion.onChange = () => this.rotation.fromQuaternion(this.quaternion);
     }
 
+    //设置当前对象的父级
     setParent(parent, notifyParent = true) {
         if (notifyParent && this.parent && parent !== this.parent) this.parent.removeChild(this, false);
         this.parent = parent;
+
+        //调用父级的addChild方法，将当前对象添加到父级的children中
         if (notifyParent && parent) parent.addChild(this, false);
     }
 
@@ -58,11 +62,14 @@ export class Transform {
         if (this.worldMatrixNeedsUpdate || force) {
             //如果不存在父级
             if (this.parent === null) this.worldMatrix.copy(this.matrix);
+            //将父级的世界矩阵与子级的局部矩阵相乘 = 当前子级的世界矩阵
             else this.worldMatrix.multiply(this.parent.worldMatrix, this.matrix);
+            //设定当前对象的世界矩阵不需要更新了
             this.worldMatrixNeedsUpdate = false;
             force = true;
         }
 
+        //当前对象存在子级，则更新子级的矩阵
         for (let i = 0, l = this.children.length; i < l; i ++) {
             this.children[i].updateMatrixWorld(force);
         }

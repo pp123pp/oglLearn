@@ -123,7 +123,9 @@ export class Geometry {
     }
 
     createVAO(program) {
+        //创建一个VAO对象
         this.VAOs[program.attributeOrder] = this.gl.renderer.createVertexArray();
+        //绑定VAO
         this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
         this.bindAttributes(program);
     }
@@ -131,6 +133,7 @@ export class Geometry {
     bindAttributes(program) {
 
         // Link all attributes to program using gl.vertexAttribPointer
+        //遍历所有的attribute
         program.attributeLocations.forEach((location, name) => {
 
             // If geometry missing a required shader attribute
@@ -141,8 +144,10 @@ export class Geometry {
 
             const attr = this.attributes[name];
 
+            //将buffer与target进行绑定
             this.gl.bindBuffer(attr.target, attr.buffer);
             this.glState.boundBuffer = attr.id;
+            //将缓冲区对象绑定到着色器变量中
             this.gl.vertexAttribPointer(
                 location,
                 attr.size,
@@ -166,7 +171,8 @@ export class Geometry {
         program,
         mode = this.gl.TRIANGLES,
     }) {
-        if (this.gl.renderer.currentGeometry !== `${this.id}_${program.attributeOrder}`) {   
+        if (this.gl.renderer.currentGeometry !== `${this.id}_${program.attributeOrder}`) {
+            //创建VAO
             if (!this.VAOs[program.attributeOrder]) this.createVAO(program);
             this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
             this.gl.renderer.currentGeometry = `${this.id}_${program.attributeOrder}`;

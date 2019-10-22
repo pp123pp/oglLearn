@@ -79,7 +79,7 @@ export class Mesh extends Transform {
         //这里如果对象的矩阵的行列式<0，则产生镜像，此时三角面需要进行翻转
         let flipFaces = this.program.cullFace && this.worldMatrix.determinant() < 0;
 
-        //是否执行面翻转
+        //告知webgl系统使用当前program，是否执行面翻转
         this.program.use({flipFaces});
         this.geometry.draw({mode: this.mode, program: this.program});
 
