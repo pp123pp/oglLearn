@@ -1,10 +1,13 @@
 import {Geometry} from '../core/Geometry.js';
 import {Vec3} from '../math/Vec3.js';
 
+/**
+ * 如何创建一个球:略
+ */
 export class Sphere extends Geometry {
     constructor(gl, {
-        radius = 0.5, 
-        widthSegments = 16, 
+        radius = 0.5,   //球的半径
+        widthSegments = 16,    //横向分段数
         heightSegments = Math.ceil(widthSegments * 0.5), 
         phiStart = 0, 
         phiLength = Math.PI * 2, 

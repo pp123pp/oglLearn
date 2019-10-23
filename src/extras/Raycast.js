@@ -13,7 +13,9 @@ export class Raycast {
     constructor(gl) {
         this.gl = gl;
 
+        //射线起点
         this.origin = new Vec3();
+        //射线方向
         this.direction = new Vec3();
     }
 
@@ -21,6 +23,7 @@ export class Raycast {
     castMouse(camera, mouse = [0, 0]) {
 
         // Set origin
+        //更新射线起点
         camera.worldMatrix.getTranslation(this.origin);
         
         // Set direction

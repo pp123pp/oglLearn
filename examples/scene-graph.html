@@ -16,42 +16,42 @@
         import {Sphere, Box} from '../src/Extras.js';
         
         const vertex = `
-            precision highp float;
-            precision highp int;
+            precision highp float;      //高精度浮点
+            precision highp int;        //高精度整形
 
-            attribute vec3 position;
-            attribute vec3 normal;
+            attribute vec3 position;    //坐标
+            attribute vec3 normal;      //法线
 
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            uniform mat3 normalMatrix;
+            uniform mat4 modelViewMatrix;   //模型视图矩阵
+            uniform mat4 projectionMatrix;  //投影矩阵
+            uniform mat3 normalMatrix;      //法向矩阵
 
             varying vec3 vNormal;
             varying vec4 vMVPos;
 
             void main() {
-                vNormal = normalize(normalMatrix * normal);
+                vNormal = normalize(normalMatrix * normal);     //调整法线，并将其归一化到[0, 1]
                 
-                vMVPos = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * vMVPos;
+                vMVPos = modelViewMatrix * vec4(position, 1.0);     //转换到视图矩阵
+                gl_Position = projectionMatrix * vMVPos;        //转化到投影矩阵
             }
         `;
 
         const fragment = `
-            precision highp float;
-            precision highp int;
+            precision highp float;      //高精度浮点
+            precision highp int;        //高精度整形
 
-            varying vec3 vNormal;
-            varying vec4 vMVPos;
+            varying vec3 vNormal;       //法线
+            varying vec4 vMVPos;        //视图矩阵的坐标
 
             void main() {
-                vec3 normal = normalize(vNormal);
-                float lighting = dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));
+                vec3 normal = normalize(vNormal);       //将法线归一化到[0, 1]
+                float lighting = dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));  //计算光照,这里的光照在视图坐标系下
                 vec3 color = vec3(1.0, 0.5, 0.2) * (1.0 - 0.5 * lighting) + vMVPos.xzy * 0.1;
                 
-                float dist = length(vMVPos);
+                float dist = length(vMVPos);    //获取当前点到视点的距离
                 float fog = smoothstep(4.0, 10.0, dist);
-                color = mix(color, vec3(1.0), fog);
+                color = mix(color, vec3(1.0), fog);     //场合雾的颜色做混合
                 
                 gl_FragColor.rgb = color;
                 gl_FragColor.a = 1.0;
@@ -59,14 +59,18 @@
         `;
 
         {
+            //创建渲染器
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
 
             // The Camera class extends Transform. See Below for more on Transform.
+            //创建相机
             const camera = new Camera(gl, {fov: 35});
+            //坐标
             camera.position.set(0, 1, 7);
+            //观察点
             camera.lookAt([0, 0, 0]);
 
             function resize() {
@@ -76,6 +80,7 @@
             window.addEventListener('resize', resize, false);
             resize();
 
+            //创建球的几何体
             const sphereGeometry = new Sphere(gl, {radius: 0.15});
             const cubeGeometry = new Box(gl, {width: 0.3, height: 0.3, depth: 0.3});
 
@@ -89,6 +94,7 @@
             const scene = new Transform();
 
             // The Mesh class extends the Transform class, and so shares the scene graph functionality
+            //创建一个球
             const sphere = new Mesh(gl, {geometry: sphereGeometry, program});
             sphere.speed = -0.5;
 

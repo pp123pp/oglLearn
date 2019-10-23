@@ -45,7 +45,7 @@
             void main() {
                 vec3 normal = normalize(vNormal);
                 float lighting = dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));
-                vec3 color = mix(vec3(0.2, 0.8, 1.0), vec3(1.0, 0.2, 0.8), uHit);
+                vec3 color = mix(vec3(0.2, 0.8, 1.0), vec3(1.0, 0.0, 0.8), uHit);
                 gl_FragColor.rgb = color + lighting * 0.1;
                 gl_FragColor.a = 1.0;
             }
@@ -115,6 +115,7 @@
             const mouse = new Vec2();
 
             // Create a raycast object
+            //创建一个射线对象
             const raycast = new Raycast(gl);
 
             // Define an array of the meshes we want to test our ray against
@@ -127,12 +128,14 @@
             document.addEventListener('mousemove', move, false);
             document.addEventListener('touchmove', move, false);
             function move(e) {
+                //获取NDC坐标
                 mouse.set(
                     2.0 * (e.x / renderer.width) - 1.0,
                     2.0 * (1.0 - e.y / renderer.height) - 1.0
                 );
 
                 // Update the ray's origin and direction using the camera and mouse
+                //根据相机和鼠标，更新射线的方向
                 raycast.castMouse(camera, mouse);
                 
                 // Just for the feedback in this example - reset each mesh's hit to false

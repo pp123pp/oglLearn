@@ -68,6 +68,7 @@ export class Mesh extends Transform {
             this.program.uniforms.viewMatrix.value = camera.viewMatrix;
 
             this.modelViewMatrix.multiply(camera.viewMatrix, this.worldMatrix);
+            //获取法向矩阵(法线的变换矩阵)
             this.normalMatrix.getNormalMatrix(this.modelViewMatrix);
 
             this.program.uniforms.modelMatrix.value = this.worldMatrix;

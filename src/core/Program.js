@@ -136,9 +136,13 @@ export class Program {
     }
 
     setBlendFunc(src, dst, srcAlpha, dstAlpha) {
+        //保存源颜色
         this.blendFunc.src = src;
+        //保存目标颜色
         this.blendFunc.dst = dst;
+        //源颜色的alpha
         this.blendFunc.srcAlpha = srcAlpha;
+        //目标颜色的alpha
         this.blendFunc.dstAlpha = dstAlpha;
         if (src) this.transparent = true;
     }

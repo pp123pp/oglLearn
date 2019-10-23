@@ -80,6 +80,7 @@ export class Mat3 extends Array {
         return this;
     }
 
+    //获取法向矩阵
     getNormalMatrix(m) {
         Mat3Func.normalFromMat4(this, m);
         return this;
