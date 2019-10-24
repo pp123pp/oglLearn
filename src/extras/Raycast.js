@@ -20,15 +20,18 @@ export class Raycast {
     }
 
     // Set ray from mouse unprojection
+    //计算得到从相机指向选中点的方向向量
     castMouse(camera, mouse = [0, 0]) {
 
         // Set origin
         //更新射线起点
         camera.worldMatrix.getTranslation(this.origin);
-        
+
         // Set direction
         this.direction.set(mouse[0], mouse[1], 0.5);
+        //将屏幕坐标转化到视点坐标
         camera.unproject(this.direction);
+        //计算得到从相机指向选中点的方向向量
         this.direction.sub(this.origin).normalize();
     }
 
@@ -41,21 +44,26 @@ export class Raycast {
 
         const hits = [];
 
+        //遍历每个需要进行相交测试的对象
         meshes.forEach(mesh => {
 
             // Create bounds
+            //计算包围体
             if (!mesh.geometry.bounds) mesh.geometry.computeBoundingBox();
             if (mesh.geometry.raycast === 'sphere' && mesh.geometry.bounds === Infinity) mesh.geometry.computeBoundingSphere();
 
             // Take world space ray and make it object space to align with bounding box
+            //这里世界矩阵取逆，用于将射线转换到对象的局部坐标系下（起点和方向）
             invWorldMat4.inverse(mesh.worldMatrix);
             origin.copy(this.origin).applyMatrix4(invWorldMat4);
             direction.copy(this.direction).transformDirection(invWorldMat4);
 
             let distance = 0;
-            if (mesh.geometry.raycast === 'sphere') { 
+            //射线与包围体的相交测试在对象的局部坐标系下计算
+            if (mesh.geometry.raycast === 'sphere') {
                 distance = this.intersectSphere(mesh.geometry.bounds, origin, direction);
             } else {
+                //计算在局部坐标系下包围体与射线起点的距离
                 distance = this.intersectBox(mesh.geometry.bounds, origin, direction);
             }
             if (!distance) return;
@@ -69,6 +77,7 @@ export class Raycast {
             hits.push(mesh);
         });
 
+        //拾取到的对象根据距离进行排序
         hits.sort((a, b) => a.hit.distance - b.hit.distance);
         return hits;
     }
@@ -96,11 +105,11 @@ export class Raycast {
     // Ray AABB - Ray Axis aligned bounding box testing
     intersectBox(box, origin = this.origin, direction = this.direction) {
         let tmin, tmax, tYmin, tYmax, tZmin, tZmax;
-    
+
         const invdirx = 1 / direction.x;
         const invdiry = 1 / direction.y;
         const invdirz = 1 / direction.z;
-    
+
         const min = box.min;
         const max = box.max;
 
@@ -109,19 +118,19 @@ export class Raycast {
 
         tYmin = ((invdiry >= 0 ? min.y : max.y) - origin.y) * invdiry;
         tYmax = ((invdiry >= 0 ? max.y : min.y) - origin.y) * invdiry;
-    
+
         if ((tmin > tYmax) || (tYmin > tmax)) return 0;
-    
+
         if (tYmin > tmin) tmin = tYmin;
         if (tYmax < tmax) tmax = tYmax;
-    
+
         tZmin = ((invdirz >= 0 ? min.z : max.z) - origin.z) * invdirz;
         tZmax = ((invdirz >= 0 ? max.z : min.z) - origin.z) * invdirz;
-    
+
         if ((tmin > tZmax) || (tZmin > tmax)) return 0;
         if (tZmin > tmin) tmin = tZmin;
         if (tZmax < tmax) tmax = tZmax;
-    
+
         if (tmax < 0) return 0;
 
         return tmin >= 0 ? tmin : tmax;

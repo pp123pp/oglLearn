@@ -28,9 +28,9 @@
 
             void main() {
                 vUv = uv;
-                
+
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                
+
                 // gl_PointSize only applicable for gl.POINTS draw mode
                 gl_PointSize = 5.0;
             }
@@ -94,6 +94,7 @@
 
             // gl.LINES: draws 3 lines - a line between each pair of vertices.
             // Ideal use for separated lines.
+            //绘制模式为线
             const lineStrip = new Mesh(gl, {mode: gl.LINES, geometry, program});
             lineStrip.setParent(scene);
             lineStrip.position.set(1, 1, 0);
@@ -135,6 +136,7 @@
                 requestAnimationFrame(update);
 
                 program.uniforms.uTime.value = t * 0.001;
+                //执行帧渲染
                 renderer.render({scene, camera});
             }
         }

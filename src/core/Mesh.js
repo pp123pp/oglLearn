@@ -49,6 +49,7 @@ export class Mesh extends Transform {
         this.beforeRenderCallbacks.forEach(f => f && f({mesh: this, camera}));
 
         // Set the matrix uniforms
+        //如果设置了相机
         if (camera) {
 
             // Add empty matrix uniforms to program if unset
@@ -63,6 +64,7 @@ export class Mesh extends Transform {
                 });
             }
 
+            //获取相机拒诊
             this.program.uniforms.projectionMatrix.value = camera.projectionMatrix;
             this.program.uniforms.cameraPosition.value = camera.position;
             this.program.uniforms.viewMatrix.value = camera.viewMatrix;
@@ -82,6 +84,7 @@ export class Mesh extends Transform {
 
         //告知webgl系统使用当前program，是否执行面翻转
         this.program.use({flipFaces});
+        //几何体绘制
         this.geometry.draw({mode: this.mode, program: this.program});
 
         this.afterRenderCallbacks.forEach(f => f && f({mesh: this, camera}));

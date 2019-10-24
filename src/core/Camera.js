@@ -69,21 +69,19 @@ export class Camera extends Transform {
         return this;
     }
 
-    //更新相机的世界矩阵
+    //更新相机矩阵
     updateMatrixWorld() {
         //更新世界矩阵
         super.updateMatrixWorld();
 
-        //世界矩阵的逆 =》视图矩阵
+        //将视图矩阵取逆，计算世界矩阵
         this.viewMatrix.inverse(this.worldMatrix);
-        
         // used for sorting
-        //重新计算视图投影矩阵
+        //计算视图投影拒诊
         this.projectionViewMatrix.multiply(this.projectionMatrix, this.viewMatrix);
         return this;
     }
 
-    //相机看向指定坐标
     lookAt(target) {
         super.lookAt(target, true);
         return this;
@@ -98,7 +96,9 @@ export class Camera extends Transform {
 
     // Unproject 2D point to 3D coordinate
     unproject(v) {
+        //转换到投影坐标系下
         v.applyMatrix4(tempMat4.inverse(this.projectionMatrix));
+        //乘相机的世界矩阵
         v.applyMatrix4(this.worldMatrix);
         return this;
     }
@@ -124,15 +124,20 @@ export class Camera extends Transform {
         }
     }
 
+    //视锥裁剪
     frustumIntersectsMesh(node) {
 
         // If no position attribute, treat as frustumCulled false
+        //如果当前对象没有坐标
         if (!node.geometry.attributes.position) return true;
-        
+
+        //如果当前对象未计算包围体
         if (!node.geometry.bounds || node.geometry.bounds.radius === Infinity) node.geometry.computeBoundingSphere();
 
         const center = tempVec3a;
+        //获取包围球中心
         center.copy(node.geometry.bounds.center);
+        //包围球偏移
         center.applyMatrix4(node.worldMatrix);
 
         const radius = node.geometry.bounds.radius * node.worldMatrix.getMaxScaleOnAxis();

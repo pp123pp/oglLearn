@@ -293,9 +293,12 @@ export class Renderer {
         scene.traverse(node => {
             //如果当前对象不可见，则直接返回
             if (!node.visible) return true;
+            //如果当前对象不存在draw方法，则直接返回
             if (!node.draw) return;
 
+            //如果执行视锥裁剪，且当前对象也行裁剪
             if (frustumCull && node.frustumCulled && camera) {
+                //如果当前对象不在视锥内
                 if (!camera.frustumIntersectsMesh(node)) return;
             }
 

@@ -4,18 +4,19 @@
 // TODO: blit on resize?
 import {Texture} from './Texture.js';
 
+//创建一个离屏渲染对象
 export class RenderTarget {
     constructor(gl, {
         width = gl.canvas.width,
         height = gl.canvas.height,
-        target = gl.FRAMEBUFFER,
-        color = 1, // number of color attachments
-        depth = true,
-        stencil = false,
+        target = gl.FRAMEBUFFER,    //需要绑定的目标
+        color = 1, // number of color attachments 颜色
+        depth = true,   //深度
+        stencil = false,    //模板
         depthTexture = false, // note - stencil breaks
-        wrapS = gl.CLAMP_TO_EDGE,
+        wrapS = gl.CLAMP_TO_EDGE,   //边缘拉伸
         wrapT = gl.CLAMP_TO_EDGE,
-        minFilter = gl.LINEAR,
+        minFilter = gl.LINEAR,  //线性采样
         magFilter = minFilter,
         type = gl.UNSIGNED_BYTE,
         format = gl.RGBA,
@@ -27,8 +28,10 @@ export class RenderTarget {
         this.width = width;
         this.height = height;
         this.depth = depth;
+        //创建一个帧缓冲对象
         this.buffer = this.gl.createFramebuffer();
         this.target = target;
+        //将帧缓冲对象绑定到target上
         this.gl.bindFramebuffer(this.target, this.buffer);
 
         this.textures = [];
@@ -36,13 +39,17 @@ export class RenderTarget {
         // TODO: multi target rendering
         // create and attach required num of color textures
         for (let i = 0; i < color; i++) {
+            //创建纹理对象
             this.textures.push(new Texture(gl, {
-                width, height, 
+                width, height,
                 wrapS, wrapT, minFilter, magFilter, type, format, internalFormat, unpackAlignment, premultiplyAlpha,
                 flipY: false,
                 generateMipmaps: false,
             }));
+            //载入纹理
             this.textures[i].update();
+
+            //将纹理对象与FBO进行绑定
             this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
         }
 
@@ -64,8 +71,11 @@ export class RenderTarget {
         } else {
 
             // Render buffers
+            // 保存深度信息，但不保存模板信息
             if (depth && !stencil) {
+                //创建一个渲染缓冲区
                 this.depthBuffer = this.gl.createRenderbuffer();
+                //绑定到target上
                 this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
                 this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, width, height);
                 this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);

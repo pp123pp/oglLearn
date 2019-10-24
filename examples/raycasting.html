@@ -14,10 +14,10 @@
     <script type="module">
         import {Renderer, Camera, Transform, Program, Mesh, Vec2} from '../src/Core.js';
         import {Plane, Sphere, Box, Orbit, Raycast} from '../src/Extras.js';
-        
+
         const vertex = `
-            precision highp float;
-            precision highp int;
+            precision highp float;      //高精度浮点
+            precision highp int;        //高精度整型
 
             attribute vec3 position;
             attribute vec3 normal;
@@ -44,8 +44,8 @@
 
             void main() {
                 vec3 normal = normalize(vNormal);
-                float lighting = dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));
-                vec3 color = mix(vec3(0.2, 0.8, 1.0), vec3(1.0, 0.0, 0.8), uHit);
+                float lighting = dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));  //计算光照
+                vec3 color = mix(vec3(0.2, 0.8, 1.0), vec3(1.0, 0.0, 0.8), uHit);   //根据是否选中计算颜色
                 gl_FragColor.rgb = color + lighting * 0.1;
                 gl_FragColor.a = 1.0;
             }
@@ -137,15 +137,18 @@
                 // Update the ray's origin and direction using the camera and mouse
                 //根据相机和鼠标，更新射线的方向
                 raycast.castMouse(camera, mouse);
-                
+
                 // Just for the feedback in this example - reset each mesh's hit to false
+                //将每个对象的选中状态设置为false
                 meshes.forEach(mesh => mesh.isHit = false);
 
-                // raycast.intersectBounds will test against the bounds of each mesh, and 
+                // raycast.intersectBounds will test against the bounds of each mesh, and
                 // return an array of intersected meshes in order of closest to farthest
+                //执行相机的相交测试
                 const hits = raycast.intersectBounds(meshes);
 
                 // Update our feedback using this array
+                //将相交到的对象的isHit变为true
                 hits.forEach(mesh => mesh.isHit = true);
             }
         }

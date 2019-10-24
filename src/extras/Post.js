@@ -10,10 +10,11 @@ export class Post {
         width,
         height,
         dpr,
-        wrapS = gl.CLAMP_TO_EDGE,
+        wrapS = gl.CLAMP_TO_EDGE,   //边缘拉伸
         wrapT = gl.CLAMP_TO_EDGE,
-        minFilter = gl.LINEAR,
+        minFilter = gl.LINEAR,  //线性采样
         magFilter = gl.LINEAR,
+        //
         geometry = new Geometry(gl, {
             position: {size: 2, data: new Float32Array([-1, -1, 3, -1, -1, 3])},
             uv: {size: 2, data: new Float32Array([0, 0, 2, 0, 0, 2])},
@@ -53,7 +54,7 @@ export class Post {
         const mesh = new Mesh(this.gl, {geometry: this.geometry, program});
 
         const pass = {
-            mesh, 
+            mesh,
             program,
             uniforms,
             enabled,
@@ -65,6 +66,7 @@ export class Post {
     }
 
     resize({width, height, dpr} = {}) {
+        //分辨率
         if (dpr) this.dpr = dpr;
         if (width) {
             this.width = width;
@@ -78,7 +80,9 @@ export class Post {
         this.options.width = width;
         this.options.height = height;
 
+        //读的RenderTarget
         this.fbo.read = new RenderTarget(this.gl, this.options);
+        //写的RenderTarget
         this.fbo.write = new RenderTarget(this.gl, this.options);
     }
 
@@ -92,7 +96,7 @@ export class Post {
         frustumCull = true,
     }) {
         const enabledPasses = this.passes.filter(pass => pass.enabled);
-        
+
         this.gl.renderer.render({
             scene, camera,
             target: enabledPasses.length ? this.fbo.write : target,
@@ -103,7 +107,7 @@ export class Post {
         enabledPasses.forEach((pass, i) => {
             pass.mesh.program.uniforms[pass.textureUniform].value = this.fbo.read.texture;
             this.gl.renderer.render({
-                scene: pass.mesh, 
+                scene: pass.mesh,
                 target: i === enabledPasses.length - 1 ? target : this.fbo.write,
                 clear: false,
             });

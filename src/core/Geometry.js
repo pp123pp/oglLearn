@@ -59,8 +59,8 @@ export class Geometry {
         attr.size = attr.size || 1;
         //设定输入的数据类型
         attr.type = attr.type || (
-            attr.data.constructor === Float32Array ? this.gl.FLOAT : 
-            attr.data.constructor === Uint16Array ? this.gl.UNSIGNED_SHORT : 
+            attr.data.constructor === Float32Array ? this.gl.FLOAT :
+            attr.data.constructor === Uint16Array ? this.gl.UNSIGNED_SHORT :
             this.gl.UNSIGNED_INT); // Uint32Array
 
         //判断当前的attribute是否为index，并设定不同的存储目标
@@ -167,23 +167,32 @@ export class Geometry {
         if (this.attributes.index) this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.attributes.index.buffer);
     }
 
+    /**
+     * 几何体绘制
+     * @param program
+     * @param mode
+     */
     draw({
         program,
-        mode = this.gl.TRIANGLES,
+        mode = this.gl.TRIANGLES,   //绘制模式：默认为三角网
     }) {
         if (this.gl.renderer.currentGeometry !== `${this.id}_${program.attributeOrder}`) {
             //创建VAO
             if (!this.VAOs[program.attributeOrder]) this.createVAO(program);
+            //绑定VAO
             this.gl.renderer.bindVertexArray(this.VAOs[program.attributeOrder]);
             this.gl.renderer.currentGeometry = `${this.id}_${program.attributeOrder}`;
         }
 
         // Check if any attributes need updating
+        //遍历所有attribute
         program.attributeLocations.forEach((location, name) => {
             const attr = this.attributes[name];
+            //更新buffer中的数据
             if (attr.needsUpdate) this.updateAttribute(attr);
         });
 
+        //当前geometry是否为instance
         if (this.isInstanced) {
             if (this.attributes.index) {
                 this.gl.renderer.drawElementsInstanced(mode, this.drawRange.count, this.attributes.index.type, this.drawRange.start, this.instancedCount);
@@ -191,14 +200,20 @@ export class Geometry {
                 this.gl.renderer.drawArraysInstanced(mode, this.drawRange.start, this.drawRange.count, this.instancedCount);
             }
         } else {
+            //如果当前的attribute为index
             if (this.attributes.index) {
+                //通过索引绘制
                 this.gl.drawElements(mode, this.drawRange.count, this.attributes.index.type, this.drawRange.start);
             } else {
+                //通过顶点绘制
                 this.gl.drawArrays(mode, this.drawRange.start, this.drawRange.count);
             }
         }
     }
 
+    /*
+    此处拿到最大最小边界数据，算包围盒
+     */
     computeBoundingBox(array) {
 
         // Use position buffer if available
@@ -241,12 +256,14 @@ export class Geometry {
         center.add(min, max).divide(2);
     }
 
+    //计算包围球
     computeBoundingSphere(array) {
 
         // Use position buffer if available
         if (!array && this.attributes.position) array = this.attributes.position.data;
         if (!array) console.warn('No position buffer found to compute bounds');
 
+        //计算包围盒
         if (!this.bounds) this.computeBoundingBox(array);
 
         let maxRadiusSq = 0;
