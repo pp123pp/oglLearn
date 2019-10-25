@@ -42,15 +42,17 @@ export class Post {
     }
 
     addPass({
-        vertex = defaultVertex,
-        fragment = defaultFragment,
+        vertex = defaultVertex,     //默认的vs
+        fragment = defaultFragment, //默认的fs
         uniforms = {},
         textureUniform = 'tMap',
         enabled = true,
     } = {}) {
         uniforms[textureUniform] = {value: this.fbo.read.texture};
 
+        //创建一个program
         const program = new Program(this.gl, {vertex, fragment, uniforms});
+        //创建一个显示在屏幕的mesh
         const mesh = new Mesh(this.gl, {geometry: this.geometry, program});
 
         const pass = {
@@ -92,25 +94,31 @@ export class Post {
         camera,
         target = null,
         update = true,
-        sort = true,
-        frustumCull = true,
+        sort = true,    //是否排序
+        frustumCull = true, //视锥裁剪
     }) {
+        //从多个pass的集合中，筛选出当前执行的pass
         const enabledPasses = this.passes.filter(pass => pass.enabled);
 
+        //渲染场景，并将渲染结果保存到target上
         this.gl.renderer.render({
             scene, camera,
             target: enabledPasses.length ? this.fbo.write : target,
             update, sort, frustumCull,
         });
+        //将读写缓冲区进行转换
         this.fbo.swap();
 
+        //遍历所有执行的pass
         enabledPasses.forEach((pass, i) => {
+            //将之前render出来的结果(也就是现在的fbo.read)通过unifor传入
             pass.mesh.program.uniforms[pass.textureUniform].value = this.fbo.read.texture;
             this.gl.renderer.render({
-                scene: pass.mesh,
-                target: i === enabledPasses.length - 1 ? target : this.fbo.write,
-                clear: false,
+                scene: pass.mesh,   //这里只渲染一个pass的mesh，而无需对整个场景进行渲染
+                target: i === enabledPasses.length - 1 ? target : this.fbo.write,   //如果当前的pass为最后一个，则直接将其渲染到屏幕上，否则将结果保存至可写缓冲区中
+                clear: false,   //这里不清空上一帧的运行结果
             });
+            //这里，再次将读写缓冲区对换
             this.fbo.swap();
         });
     }

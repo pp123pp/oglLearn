@@ -28,7 +28,7 @@ export class RenderTarget {
         this.width = width;
         this.height = height;
         this.depth = depth;
-        //创建一个帧缓冲对象
+        //创建一个帧缓冲对象，帧缓冲对象是一个附件集，其中绑定的附件可以使纹理也可以是renderBuffers
         this.buffer = this.gl.createFramebuffer();
         this.target = target;
         //将帧缓冲对象绑定到target上
@@ -49,7 +49,7 @@ export class RenderTarget {
             //载入纹理
             this.textures[i].update();
 
-            //将纹理对象与FBO进行绑定
+            //为帧缓冲绑定一个颜色附件
             this.gl.framebufferTexture2D(this.target, this.gl.COLOR_ATTACHMENT0 + i, this.gl.TEXTURE_2D, this.textures[i].texture, 0 /* level */);
         }
 
@@ -77,7 +77,9 @@ export class RenderTarget {
                 this.depthBuffer = this.gl.createRenderbuffer();
                 //绑定到target上
                 this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.depthBuffer);
+                //设置缓冲区尺寸，这里的尺寸需要有关联的颜色缓冲区一致
                 this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, width, height);
+                //将渲染缓冲区与帧缓冲区关联，这里指深度帧缓冲
                 this.gl.framebufferRenderbuffer(this.target, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, this.depthBuffer);
             }
 
@@ -96,6 +98,7 @@ export class RenderTarget {
             }
         }
 
+        //帧缓冲解绑
         this.gl.bindFramebuffer(this.target, null);
     }
 

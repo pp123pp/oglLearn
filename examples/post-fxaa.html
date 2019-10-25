@@ -21,7 +21,7 @@
             // Default uniform for previous pass is 'tMap'.
             // Can change this using the 'textureUniform' property
             // when adding a pass.
-            uniform sampler2D tMap;
+            uniform sampler2D tMap;     //传入的渲染结果
 
             uniform vec2 uResolution;
 
@@ -110,6 +110,8 @@
 
             // Add pass like you're creating a Program. Then use the 'enabled'
             // property to toggle the pass.
+
+            //添加一个后处理
             const pass = post.addPass({
 
                 // If not passed in, pass will use the default vertex/fragment

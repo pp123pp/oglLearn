@@ -363,17 +363,20 @@ export class Renderer {
         clear,
     }) {
 
+        //如果不指定renderTarget
         if (target === null) {
 
             // make sure no render target bound so draws to canvas
-            //绑定FBO，如果存在离屏渲染
+            //绑定FBO，如果不存在离屏渲染
             this.bindFramebuffer();
             //设置视口
             this.setViewport(this.width * this.dpr, this.height * this.dpr);
         } else {
-
+            //如果进行离屏渲染，指定renderTarget
             // bind supplied render target and update viewport
+            //将target与FBO进行绑定
             this.bindFramebuffer(target);
+            //设置视口
             this.setViewport(target.width, target.height);
         }
 
