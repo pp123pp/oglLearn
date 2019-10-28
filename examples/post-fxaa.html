@@ -27,26 +27,31 @@
 
             varying vec2 vUv;
 
+            //fxaa 是基于边缘检测的抗锯齿算法，依赖于像素亮度信息的变化，因此需要将颜色值转换为亮度信息
             vec4 fxaa(sampler2D tex, vec2 uv, vec2 resolution) {
-                vec2 pixel = vec2(1) / resolution;
+                vec2 pixel = vec2(1) / resolution;      //将像素坐标规范在[0, 1]范围内
 
-                vec3 l = vec3(0.299, 0.587, 0.114);
-                float lNW = dot(texture2D(tex, uv + vec2(-1, -1) * pixel).rgb, l);
-                float lNE = dot(texture2D(tex, uv + vec2( 1, -1) * pixel).rgb, l);
-                float lSW = dot(texture2D(tex, uv + vec2(-1,  1) * pixel).rgb, l);
-                float lSE = dot(texture2D(tex, uv + vec2( 1,  1) * pixel).rgb, l);
-                float lM  = dot(texture2D(tex, uv).rgb, l);
-                float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE)));
-                float lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));
+                vec3 l = vec3(0.299, 0.587, 0.114); //亮度计算因子,分别表示在将rgb转换为灰度值的过程中所占的权重
+                //提取周围点的亮度
+                float lNW = dot(texture2D(tex, uv + vec2(-1, -1) * pixel).rgb, l);  //左上方的亮度(西北)
+                float lNE = dot(texture2D(tex, uv + vec2( 1, -1) * pixel).rgb, l);  //右上方亮度(东北)
+                float lSW = dot(texture2D(tex, uv + vec2(-1,  1) * pixel).rgb, l);  //左下方亮度
+                float lSE = dot(texture2D(tex, uv + vec2( 1,  1) * pixel).rgb, l);  //右下方亮度
+                float lM  = dot(texture2D(tex, uv).rgb, l);                         //中间亮度
+                float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE)));    //计算亮度的最小值
+                float lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));    //计算亮度的最大值
 
+                //计算中心点周围亮度的变化方向，从下往上，从左往右(x:纵向 y:横向)
                 vec2 dir = vec2(
                     -((lNW + lNE) - (lSW + lSE)),
                      ((lNW + lSW) - (lNE + lSE))
                 );
 
+                //这里设定一个横纵方向的亮度阈值，如果低于这个值，则不在边缘，无需对这个像素计算抗锯齿
                 float dirReduce = max((lNW + lNE + lSW + lSE) * 0.03125, 0.0078125);
                 float rcpDirMin = 1.0 / (min(abs(dir.x), abs(dir.y)) + dirReduce);
                 dir = min(vec2(8, 8), max(vec2(-8, -8), dir * rcpDirMin)) * pixel;
+
 
                 vec3 rgbA = 0.5 * (
                     texture2D(tex, uv + dir * (1.0 / 3.0 - 0.5)).rgb +
@@ -56,7 +61,7 @@
                     texture2D(tex, uv + dir * -0.5).rgb +
                     texture2D(tex, uv + dir * 0.5).rgb);
 
-                float lB = dot(rgbB, l);
+                float lB = dot(rgbB, l);    //亮度计算，添加gamma矫正
 
                 return mix(
                     vec4(rgbB, 1),
@@ -66,13 +71,17 @@
             }
 
             void main() {
+                //原始采样颜色
                 vec4 raw = texture2D(tMap, vUv);
+                //抗锯齿之后的颜色
                 vec4 aa = fxaa(tMap, vUv, uResolution);
 
                 // Split screen in half to show side-by-side comparison
+                //以x方向的uv为界限，[0, 0.5]使用原始颜色，[0.5, 1.0]使用抗锯齿之后的颜色
                 gl_FragColor = mix(raw, aa, step(0.5, vUv.x));
 
                 // Darken left side a tad for clarity
+                //左侧变暗
                 gl_FragColor -= step(vUv.x, 0.5) * 0.1;
             }
         `;
