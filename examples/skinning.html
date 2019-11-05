@@ -138,11 +138,14 @@
             }
         `;
 
+        //创建渲染器
         const renderer = new Renderer({dpr: 2});
         const gl = renderer.gl;
         document.body.appendChild(gl.canvas);
+        //缓冲区清除色
         gl.clearColor(1, 1, 1, 1);
 
+        //创建相机
         const camera = new Camera(gl, {fov: 35});
         camera.position.set(6, 2, 6);
 
@@ -158,8 +161,10 @@
         const scene = new Transform();
 
         let skin, animation;
+        //加载json模型
         loadModel();
         async function loadModel() {
+            //加载模型数据
             const data = await (await fetch(`assets/snout-rig.json`)).json();
             // Rig JSON data format
             // format is the same as regular model json, with the addition of the rig object
@@ -183,7 +188,8 @@
             //         },
             //     },
             // }
-            
+
+            //加载模型动画数据
             const animationData = await (await fetch(`assets/snout-anim.json`)).json();
             // Animation JSON format
             // data is expected to be baked for each frame, therefore duration is derived
@@ -200,14 +206,18 @@
             //     ]
             // }
 
+            //创建模型的几何体
             const geometry = new Geometry(gl, {
                 position: {size: 3, data: new Float32Array(data.position)},
                 uv: {size: 2, data: new Float32Array(data.uv)},
                 normal: {size: 3, data: new Float32Array(data.normal)},
+                //蒙皮索引
                 skinIndex: {size: 4, data: new Float32Array(data.skinIndex)},
+                //权重，每个顶点限制4个权重
                 skinWeight: {size: 4, data: new Float32Array(data.skinWeight)},
             });
 
+            //加载纹理
             const texture = new Texture(gl);
             const img = new Image();
             img.onload = () => texture.image = img;
@@ -224,6 +234,8 @@
             // Skin extends Mesh - so on top of passing in geometry and program,
             // pass in the rig data, including a list of bones and their bind transforms.
             // The Skin class will automatically add 'boneTexture' and 'boneTextureSize' uniforms.
+            //对于存在骨骼动画的模型，使用Skin，继承于mesh
+            //rig: 骨骼数据
             skin = new Skin(gl, {rig: data.rig, geometry, program});
             skin.setParent(scene);
 
@@ -232,6 +244,7 @@
 
             // Helper function to add animation to skin's bones. 
             // The Animation class can be used directly for any hierarchy - is not solely for bones.
+            //添加动画数据
             animation = skin.addAnimation(animationData);
         }
 
@@ -242,7 +255,8 @@
             const img = new Image();
             img.onload = () => texture.image = img;
             img.src = 'assets/snout-shadow.jpg';
-            
+
+            //创建一个平面，表示地面
             const geometry = new Plane(gl, {width: 7, height: 7});
             const program = new Program(gl, {
                 vertex: shadowVertex,
@@ -250,12 +264,15 @@
                 uniforms: {
                     tMap: {value: texture},
                 },
-                transparent: true,
-                cullFace: false,
+                transparent: true,//透明渲染
+                cullFace: false,    //不进行裁剪，双面渲染
             });
 
+            //构建地面的mesh
             const mesh = new Mesh(gl, {geometry, program});
+            //旋转
             mesh.rotation.x = -Math.PI / 2;
+            //偏移坐标
             mesh.position.y = -1;
             mesh.setParent(scene);
         }
@@ -267,6 +284,7 @@
             // Control animation but updating the elapsed value.
             // It uses modulo to repeat the animation range, 
             // so below is playing a never-ending loop.
+            //这里用来控制骨骼动画的步长
             if (animation) animation.elapsed += 0.1;
 
             // Calling 'update' updates the bones with all of the

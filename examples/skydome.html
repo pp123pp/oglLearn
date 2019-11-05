@@ -51,11 +51,13 @@
         `;
 
         {
+            //创建渲染器
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
             gl.clearColor(1, 1, 1, 1);
 
+            //创建相机
             const camera = new Camera(gl, {fov: 45});
             camera.position.set(0, 0, 8);
 

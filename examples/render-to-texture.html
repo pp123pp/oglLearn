@@ -23,17 +23,18 @@
             attribute vec3 normal;
             attribute vec2 uv;
 
-            uniform mat4 modelViewMatrix;
-            uniform mat4 projectionMatrix;
-            uniform mat3 normalMatrix;
+            uniform mat4 modelViewMatrix;       //模型视图矩阵
+            uniform mat4 projectionMatrix;      //投影矩阵
+            uniform mat3 normalMatrix;          //法线矩阵
 
             varying vec2 vUv;
             varying vec3 vNormal;
 
             void main() {
                 vUv = uv;
-                vNormal = normalize(normalMatrix * normal);
-                
+                vNormal = normalize(normalMatrix * normal);     //将法线由世界空间转换至切线空间
+
+                //输出最终的position
                 gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
             }
         `;
@@ -48,8 +49,11 @@
             varying vec3 vNormal;
 
             void main() {
+                //法线归一化
                 vec3 normal = normalize(vNormal);
+                //计算光照
                 float lighting = 0.2 * dot(normal, normalize(vec3(-0.3, 0.8, 0.6)));
+                //获取纹理颜色值
                 vec3 tex = texture2D(tMap, vUv).rgb;
                 gl_FragColor.rgb = tex + lighting + vec3(vUv - 0.5, 0.0) * 0.1;
                 gl_FragColor.a = 1.0;
@@ -57,15 +61,17 @@
         `;
 
         {
+            //渲染器
             const renderer = new Renderer({dpr: 2});
             const gl = renderer.gl;
             document.body.appendChild(gl.canvas);
 
-
+            //副场景相机
             const camera = new Camera(gl, {fov: 35});
             camera.position.set(0, 1, 5);
             camera.lookAt([0, 0, 0]);
 
+            //主场景相机
             const targetCamera = new Camera(gl, {fov: 35});
             targetCamera.position.set(0, 1, 5);
             targetCamera.lookAt([0, 0, 0]);
@@ -79,9 +85,11 @@
             window.addEventListener('resize', resize, false);
             resize();
 
+            //创建主场景的盒子
             const geometry = new Box(gl);
 
             // A little data texture with 4 colors just to keep things interesting
+            //创建应用在FBO中的纹理对象
             const texture = new Texture(gl, {
                 image: new Uint8Array([
                     191, 25, 54, 255,
@@ -91,6 +99,7 @@
                 ]),
                 width: 2,
                 height: 2,
+                //就近采样
                 magFilter: gl.NEAREST,
             });
 
@@ -105,15 +114,18 @@
             // Create render target framebuffer.
             // Uses canvas size by default and doesn't automatically resize.
             // To resize, re-create target
+            //使用Canvas默认的对象
             const target = new RenderTarget(gl, {
                 width: 512, 
                 height: 512,
             });
 
+            //主场景的program
             const targetProgram = new Program(gl, {
                 vertex,
                 fragment,
                 uniforms: {
+                    //这里的纹理使用场景渲染完之后的输出纹理
                     tMap: {value: target.texture},
                 },
             });
@@ -130,15 +142,19 @@
                 targetMesh.rotation.x -= 0.01;
 
                 // Set background for first render to target
+                //设置缓冲区的清除色
                 gl.clearColor(0.15, 0.05, 0.2, 1);
 
                 // Add target property to render call
+                //渲染副场景
                 renderer.render({scene: mesh, camera, target});
 
                 // Change to final background
+                //再次清空
                 gl.clearColor(1, 1, 1, 1);
 
                 // Omit target to render to canvas
+                //渲染主场景
                 renderer.render({scene: targetMesh, camera: targetCamera});
             }
         }
