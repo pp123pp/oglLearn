@@ -115,14 +115,18 @@ export class Skin extends Mesh {
         this.root.updateMatrixWorld(true);
 
         // Update bone texture
+        //如果存在骨骼
         this.bones.forEach((bone, i) => {
 
             // Find difference between current and bind pose
+            //将当前骨骼的世界矩阵 * 绑定姿势的逆矩阵(这步用来消除坐标偏移)
             tempMat4.multiply(bone.worldMatrix, bone.bindInverse);
+            //更新对应的骨骼矩阵
             this.boneMatrices.set(tempMat4, i * 16);
         });
         if (this.boneTexture) this.boneTexture.needsUpdate = true;
 
+        //绘制
         super.draw({camera});
     }
 }
