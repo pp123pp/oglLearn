@@ -33,8 +33,13 @@
             uniform sampler2D boneTexture;
             uniform int boneTextureSize;
 
+            //根据骨骼索引，计算骨骼矩阵
             mat4 getBoneMatrix(const in float i) {
-                float j = i * 4.0;
+                float j = i * 4.0;  //这里 * 4.0是因为一个顶点绑定4根骨骼
+
+                //这里根据骨骼索引计算起始的对应的起始uv
+
+                //这里使用mod，使返回值[0, 32]
                 float x = mod(j, float(boneTextureSize));
                 float y = floor(j / float(boneTextureSize));
 
@@ -48,6 +53,15 @@
                 vec4 v3 = texture2D(boneTexture, vec2(dx * (x + 2.5), y));
                 vec4 v4 = texture2D(boneTexture, vec2(dx * (x + 3.5), y));
 
+                /*
+                这里由于纹理的坐标是从边缘开始算的，在当前例子中的纹理尺寸为32 * 32，因此第一个像素的中间坐标为0.5第二个像素的中间坐标为0.5 + 1.0
+                上面的式子可以更清晰的写为:
+                vec4 v1 = texture2D(boneTexture, vec2(dx * (x + 0.5 + 0.0), y));
+                vec4 v2 = texture2D(boneTexture, vec2(dx * (x + 0.5 + 1.0), y));
+                vec4 v3 = texture2D(boneTexture, vec2(dx * (x + 0.5 + 2.0), y));
+                vec4 v4 = texture2D(boneTexture, vec2(dx * (x + 0.5 + 3.0), y));
+                */
+
                 return mat4(v1, v2, v3, v4);
             }
 
@@ -56,25 +70,25 @@
 
             void main() {
                 vUv = uv;
-                vNormal = normalize(normalMatrix * normal);
+                vNormal = normalize(normalMatrix * normal);     //获取发现
 
-                mat4 boneMatX = getBoneMatrix(skinIndex.x);
+                mat4 boneMatX = getBoneMatrix(skinIndex.x);     //获取与之相关联的第一根骨骼的骨骼矩阵(下同)
                 mat4 boneMatY = getBoneMatrix(skinIndex.y);
                 mat4 boneMatZ = getBoneMatrix(skinIndex.z);
                 mat4 boneMatW = getBoneMatrix(skinIndex.w);
 
                 // update normal
                 mat4 skinMatrix = mat4(0.0);
-                skinMatrix += skinWeight.x * boneMatX;
+                skinMatrix += skinWeight.x * boneMatX;  //权重
                 skinMatrix += skinWeight.y * boneMatY;
                 skinMatrix += skinWeight.z * boneMatZ;
                 skinMatrix += skinWeight.w * boneMatW;
-                vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;
+                vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;    //法线
 
                 // Update position
                 vec4 bindPos = vec4(position, 1.0);
                 vec4 transformed = vec4(0.0);
-                transformed += boneMatX * bindPos * skinWeight.x;
+                transformed += boneMatX * bindPos * skinWeight.x;   //坐标变换
                 transformed += boneMatY * bindPos * skinWeight.y;
                 transformed += boneMatZ * bindPos * skinWeight.z;
                 transformed += boneMatW * bindPos * skinWeight.w;

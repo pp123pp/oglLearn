@@ -73,12 +73,14 @@ export class Skin extends Mesh {
 
     //创建骨骼纹理
     createBoneTexture() {
+        //如果没有骨骼
         if (!this.bones.length) return;
+        //
         const size = Math.max(4, Math.pow(2, Math.ceil(Math.log(Math.sqrt(this.bones.length * 4)) / Math.LN2)));
         this.boneMatrices = new Float32Array(size * size * 4);
         this.boneTextureSize = size;
         this.boneTexture = new Texture(this.gl, {
-            image: this.boneMatrices,
+            image: this.boneMatrices,   //这里以纹理的形式存入骨骼矩阵，这个骨骼矩阵用于保存当前帧骨骼的姿态
             generateMipmaps: false,
             type: this.gl.FLOAT,
             internalFormat: this.gl.renderer.isWebgl2 ? this.gl.RGBA16F : this.gl.RGBA,
@@ -124,6 +126,7 @@ export class Skin extends Mesh {
             //更新对应的骨骼矩阵
             this.boneMatrices.set(tempMat4, i * 16);
         });
+        //设置手动更新，更新着色器中的骨骼矩阵(boneTexture)
         if (this.boneTexture) this.boneTexture.needsUpdate = true;
 
         //绘制
