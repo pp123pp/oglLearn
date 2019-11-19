@@ -83,7 +83,7 @@
                 skinMatrix += skinWeight.y * boneMatY;
                 skinMatrix += skinWeight.z * boneMatZ;
                 skinMatrix += skinWeight.w * boneMatW;
-                vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;    //法线
+                vNormal = vec4(skinMatrix * vec4(vNormal, 0.0)).xyz;    //变换法线
 
                 // Update position
                 vec4 bindPos = vec4(position, 1.0);

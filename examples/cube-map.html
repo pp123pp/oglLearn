@@ -41,6 +41,7 @@
             void main() {
 
                 // sample function is textureCube rather than texture2D
+                // 这里的vDir表示纹理的3维坐标，由于这里的立方体中心点在坐标系中心，因此这里直接使用归一化之后的坐标就好
                 vec3 tex = textureCube(tMap, vDir).rgb;
                 
                 gl_FragColor.rgb = tex;
@@ -70,7 +71,7 @@
             
             // Create an empty texture using the gl.TEXTURE_CUBE_MAP target
             const texture = new Texture(gl, {
-                target: gl.TEXTURE_CUBE_MAP,
+                target: gl.TEXTURE_CUBE_MAP,    //指定目标为立方体映射纹理
             });
 
             loadImages();
