@@ -162,6 +162,7 @@ export class Texture {
             //如果当前是cubeMap
             if (this.target === this.gl.TEXTURE_CUBE_MAP) {
                 for (let i = 0; i < 6; i++) {
+                    //填充6个面的纹理
                     this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, this.level, this.internalFormat, this.format, this.type, this.image[i]);
                 }
             } else if (ArrayBuffer.isView(this.image)) {
@@ -190,6 +191,7 @@ export class Texture {
             if (this.target === this.gl.TEXTURE_CUBE_MAP) {
 
                 // Upload empty pixel for each side while no image to avoid errors while image or video loading
+                //当纹理未加载完成，则使用空像素进行填充
                 for (let i = 0; i < 6; i++) {
                     this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, emptyPixel);
                 }
