@@ -132,6 +132,7 @@
                 return attenuationL * attenuationV;
             }
 
+            //法线分布函数（NDF）
             float microfacetDistribution(float roughness, float NdH) {
                 float roughnessSq = roughness * roughness;
                 float f = (NdH * roughnessSq - NdH) * NdH + 1.0;
@@ -338,6 +339,7 @@
                 return pow(color, vec3(1.0 / 2.2));
             }
 
+            //返回相机坐标系下的法线
             vec3 getNormal() {
                 vec3 pos_dx = dFdx(vMPos.xyz);
                 vec3 pos_dy = dFdy(vMPos.xyz);
@@ -356,6 +358,7 @@
                 return normalize((vec4(normal, 0.0) * viewMatrix).xyz);
             }
 
+            //镜面反射
             vec3 specularReflection(vec3 specularEnvR0, vec3 specularEnvR90, float VdH) {
                 return specularEnvR0 + (specularEnvR90 - specularEnvR0) * pow(clamp(1.0 - VdH, 0.0, 1.0), 5.0);
             }
@@ -586,12 +589,15 @@
                     uniforms: {
 
                         // Base color / albedo. This is used to determine both the diffuse and specular colors.
+                        //决定漫反射与高光
                         tBaseColor: {value: getTexture('assets/pbr/car-ext-color.jpg')},
 
                         // This works as a multiplier for each channel in the texture above.
+                        // 基础色
                         uBaseColor: {value: new Color(1, 1, 1)},
                         
                         // 'Roughness', 'Metalness' and 'Occlusion', each packed into their own channel (R, G, B) 
+                        //粗糙度，金属性，遮蔽(阴影遮蔽，用于指定材质接受间接光（如环境光）的光照强度和反射强度)
                         tRMO: {value: getTexture('assets/pbr/car-ext-rmo.jpg')},
 
                         // The following are multipliers to the above values
@@ -600,21 +606,27 @@
                         uOcclusion: {value: 1},
                         
                         // Just a regular normal map
+                        //法线贴图
                         tNormal: {value: getTexture('assets/pbr/car-ext-normal.jpg')},
+                        //法线贴图对材质的影响程度
                         uNormalScale: {value: 0.5},
                         uNormalUVScale: {value: 1},
                 
                         // Emissive color is added at the very end to simulate light sources.
+                        //材质的放射（发光）贴图，用来模拟光源
                         tEmissive: {value: getTexture('assets/pbr/car-ext-emissive.jpg')},
+                        //放射光强度。调节发光颜色。默认为1。
                         uEmissive: {value: 1},
                         
                         // Initial opacity is taken from the green channel of the map below.
                         // If a transparent area is smooth, the specular may increase the opacity.
                         // This is done to simulate specular reflections on transparent surfaces like glass.
+                        //这里使用透明贴图的g通道，计算透明度
                         tOpacity: {value: getTexture('assets/pbr/car-ext-opacity.jpg')},
                       
                         // uAlpha is an overall alpha control. It is applied right at the end to hide the geometry.
                         // Specular reflections will not affect this value, unlike above.
+                        // 透明贴图的影响程度
                         uAlpha: {value: 1},
                         
                         // This Look Up Table is used to calculate the BRDF (Bidirectional reflectance distribution function)
